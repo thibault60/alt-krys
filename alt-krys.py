@@ -3,7 +3,11 @@ import requests
 import zipfile
 import io
 
-# Liste des URL d'images
+st.title("Téléchargement d'images Krys")
+
+st.write("Cliquez sur le bouton ci-dessous pour télécharger l'ensemble des images dans un fichier ZIP.")
+
+# Liste complète des URLs
 urls = [
     "https://krys-krys-storage.omn.proximis.com/Imagestorage/images/705/1600/63a2e633f3acf_Header_krys.com_2022_12_21T115531.547.png",
     "https://krys-krys-storage.omn.proximis.com/Imagestorage/images/705/1600/658aa0bb072f0_65859059160cc_03_v2.jpg",
@@ -78,35 +82,27 @@ urls = [
     "https://krys-krys-storage.omn.proximis.com/Imagestorage/images/705/1600/63efa3d1c29b3_Translucide_Homme_Copie.jpg"
 ]
 
-def download_images_and_zip(urls):
+# Fonction pour télécharger les images et créer un ZIP en mémoire
+def create_zip(urls):
     zip_buffer = io.BytesIO()
     with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
         for url in urls:
             try:
                 response = requests.get(url)
                 response.raise_for_status()
+                # Utilise le nom du fichier depuis l'URL
                 filename = url.split("/")[-1]
                 zipf.writestr(filename, response.content)
-                st.write(f"Téléchargé et ajouté : {filename}")
             except Exception as e:
                 st.error(f"Erreur lors du téléchargement de {url} : {e}")
     zip_buffer.seek(0)
     return zip_buffer
 
-def main():
-    st.title("Téléchargement des images Krys")
-    st.write("Cliquez sur le bouton ci-dessous pour télécharger toutes les images et générer un fichier ZIP.")
-    
-    if st.button("Télécharger et zipper les images"):
-        with st.spinner("Téléchargement en cours..."):
-            zip_file = download_images_and_zip(urls)
-        st.success("Téléchargement terminé!")
-        st.download_button(
-            label="Télécharger le fichier ZIP",
-            data=zip_file,
-            file_name="images.zip",
-            mime="application/zip"
-        )
-
-if __name__ == "__main__":
-    main()
+if st.button("Lancer le téléchargement"):
+    zip_file = create_zip(urls)
+    st.download_button(
+        label="Télécharger le fichier ZIP",
+        data=zip_file,
+        file_name="images.zip",
+        mime="application/zip"
+    )
